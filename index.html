@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ganpati Bappa Morya</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Mulish:wght@400;500;600;700&display=swap');
+
+  :root {
+    --ivory: #FBF5E9;
+    --ivory-deep: #F2E7D2;
+    --saffron: #D98D3D;
+    --saffron-deep: #B96F27;
+    --maroon: #6B1E2A;
+    --maroon-soft: #8A3140;
+    --gold: #A9812E;
+    --gold-soft: #C9A661;
+    --ink: #3B2417;
+    --ink-soft: #7C5C46;
+    --line: rgba(107, 30, 42, 0.16);
+    --line-soft: rgba(169, 129, 46, 0.28);
+    --danger: #9A3B2E;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background:
+      radial-gradient(ellipse at top, var(--ivory-deep) 0%, var(--ivory) 45%, var(--ivory) 100%);
+    color: var(--ink);
+    font-family: 'Mulish', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  .page {
+    max-width: 460px;
+    margin: 0 auto;
+    padding: 40px 24px 64px;
+  }
+
+  @media (min-width: 640px) {
+    .page {
+      max-width: 500px;
+      padding-top: 56px;
+    }
+  }
+
+  /* ---------- Hero ---------- */
+
+  .hero {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .emblem {
+    width: 108px;
+    height: 108px;
+    margin: 0 auto 22px;
+  }
+
+  .emblem svg { width: 100%; height: 100%; display: block; }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 2.4rem;
+    line-height: 1.15;
+    margin: 0 0 10px;
+    color: var(--maroon);
+    letter-spacing: 0.01em;
+  }
+
+  .tagline {
+    font-size: 0.98rem;
+    color: var(--ink-soft);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  /* ---------- Sections ---------- */
+
+  .section {
+    padding: 30px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin: 0 0 6px;
+    color: var(--maroon);
+  }
+
+  .section-note {
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+    margin: 0 0 18px;
+    line-height: 1.55;
+    max-width: 38ch;
+  }
+
+  /* ---------- Buttons ---------- */
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Mulish', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 13px 26px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
+    text-decoration: none;
+  }
+
+  .btn:active { transform: scale(0.98); }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--maroon);
+    outline-offset: 3px;
+  }
+
+  .btn-primary {
+    background: var(--maroon);
+    color: var(--ivory);
+  }
+
+  .btn-primary:hover { background: var(--maroon-soft); }
+
+  .btn-primary:disabled {
+    background: #C9BDB2;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--maroon);
+    border-color: var(--line-soft);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--gold);
+    background: rgba(201, 166, 97, 0.08);
+  }
+
+  .file-btn { position: relative; }
+
+  /* ---------- Status line ---------- */
+
+  .status-line {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 16px 0 0;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  .status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #B7A895;
+    flex-shrink: 0;
+  }
+
+  .status-dot.status-idle { background: #B7A895; }
+  .status-dot.status-connecting {
+    background: var(--saffron);
+    animation: blink 1s ease-in-out infinite;
+  }
+  .status-dot.status-connected { background: #4B7A4F; }
+  .status-dot.status-disconnected { background: var(--danger); }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+
+  .inline-warning {
+    margin-top: 14px;
+    font-size: 0.87rem;
+    color: var(--danger);
+    background: rgba(154, 59, 46, 0.08);
+    border: 1px solid rgba(154, 59, 46, 0.2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    line-height: 1.5;
+  }
+
+  /* ---------- Song list ---------- */
+
+  .song-list {
+    list-style: none;
+    margin: 18px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .song-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 4px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .song-row:last-child { border-bottom: none; }
+
+  .song-select {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+    background: none;
+    border: none;
+    padding: 4px 0;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+  }
+
+  .song-select:focus-visible {
+    outline: 2px solid var(--maroon);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  .radio-dot {
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    border: 1.5px solid var(--gold-soft);
+    flex-shrink: 0;
+    position: relative;
+    transition: border-color 0.2s ease;
+  }
+
+  .song-row.selected .radio-dot {
+    border-color: var(--maroon);
+  }
+
+  .song-row.selected .radio-dot::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: var(--maroon);
+  }
+
+  .song-name {
+    font-size: 0.93rem;
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .song-row.selected .song-name { color: var(--maroon); }
+
+  .song-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .mini-btn {
+    font-family: 'Mulish', sans-serif;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    background: transparent;
+    border: 1px solid var(--line-soft);
+    border-radius: 999px;
+    padding: 6px 11px;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .mini-btn:hover {
+    color: var(--maroon);
+    border-color: var(--gold);
+  }
+
+  .mini-btn:focus-visible {
+    outline: 2px solid var(--maroon);
+    outline-offset: 2px;
+  }
+
+  .mini-btn.remove-btn:hover { color: var(--danger); }
+
+  .empty-note {
+    margin: 18px 0 0;
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  /* ---------- Ritual section ---------- */
+
+  .ritual-section { text-align: center; }
+
+  .bell-stage {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    margin: 10px auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ripple {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px solid var(--gold-soft);
+    opacity: 0;
+  }
+
+  .ripple.is-active {
+    animation: rippleOut 1.8s ease-out infinite;
+  }
+
+  @keyframes rippleOut {
+    0% { transform: scale(0.55); opacity: 0.65; }
+    100% { transform: scale(1.35); opacity: 0; }
+  }
+
+  .bell {
+    width: 72px;
+    height: 72px;
+    position: relative;
+    transform-origin: 50% 12%;
+  }
+
+  .bell svg { width: 100%; height: 100%; }
+
+  .bell.is-active {
+    animation: bellSwing 0.7s ease-in-out infinite;
+  }
+
+  @keyframes bellSwing {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-7deg); }
+    75% { transform: rotate(7deg); }
+  }
+
+  .waveform {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 5px;
+    height: 28px;
+    margin-bottom: 18px;
+  }
+
+  .waveform span {
+    display: block;
+    width: 4px;
+    border-radius: 3px;
+    background: var(--gold);
+    height: 6px;
+    animation-play-state: paused;
+  }
+
+  .waveform.is-active span { animation-play-state: running; }
+
+  .waveform span:nth-child(1) { animation: wave 0.9s ease-in-out infinite; animation-delay: 0s; }
+  .waveform span:nth-child(2) { animation: wave 0.9s ease-in-out infinite; animation-delay: 0.12s; }
+  .waveform span:nth-child(3) { animation: wave 0.9s ease-in-out infinite; animation-delay: 0.24s; }
+  .waveform span:nth-child(4) { animation: wave 0.9s ease-in-out infinite; animation-delay: 0.36s; }
+  .waveform span:nth-child(5) { animation: wave 0.9s ease-in-out infinite; animation-delay: 0.48s; }
+
+  @keyframes wave {
+    0%, 100% { height: 6px; }
+    50% { height: 26px; }
+  }
+
+  .ritual-status {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--maroon);
+    margin: 0;
+  }
+
+  .now-playing {
+    margin: 6px 0 0;
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- Developer details ---------- */
+
+  .dev-section {
+    margin-top: 30px;
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+  }
+
+  details summary {
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    list-style: none;
+  }
+
+  details summary::-webkit-details-marker { display: none; }
+
+  details summary::before {
+    content: '›';
+    display: inline-block;
+    margin-right: 6px;
+    transition: transform 0.2s ease;
+  }
+
+  details[open] summary::before {
+    transform: rotate(90deg);
+  }
+
+  .dev-grid {
+    margin: 14px 0 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    row-gap: 8px;
+    column-gap: 14px;
+    font-size: 0.83rem;
+  }
+
+  .dev-grid dt {
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  .dev-grid dd {
+    margin: 0;
+    color: var(--ink);
+    word-break: break-word;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ripple.is-active,
+    .bell.is-active,
+    .waveform span,
+    .status-dot.status-connecting {
+      animation: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <header class="hero">
+    <div class="emblem" aria-hidden="true">
+      <svg viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="80" cy="80" r="74" stroke="var(--gold-soft)" stroke-width="1" opacity="0.55"/>
+        <path d="M40 74 C24 68, 22 50, 34 44 C46 38, 58 48, 56 62" stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" fill="rgba(201,166,97,0.10)"/>
+        <path d="M120 74 C136 68, 138 50, 126 44 C114 38, 102 48, 104 62" stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" fill="rgba(201,166,97,0.10)"/>
+        <ellipse cx="80" cy="82" rx="34" ry="32" stroke="var(--maroon)" stroke-width="2.2" fill="rgba(217,141,61,0.08)"/>
+        <path d="M67 96 C64 110, 70 122, 82 124 C90 125, 94 118, 90 112" stroke="var(--maroon)" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+        <circle cx="80" cy="82" r="3" fill="var(--maroon)"/>
+        <path d="M64 32 L80 14 L96 32" stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="80" cy="12" r="3.5" fill="var(--gold)"/>
+        <circle cx="80" cy="70" r="2.5" fill="var(--saffron-deep)"/>
+      </svg>
+    </div>
+    <h1>Ganpati Bappa Morya</h1>
+    <p class="tagline">A moment of devotion, connected through sound.</p>
+  </header>
+
+  <section class="section" id="connect-section">
+    <h2>Connect your device</h2>
+    <p class="section-note">Link the sensor near Bappa's feet over Bluetooth, so a wave of the hand can begin the aarti.</p>
+    <button type="button" class="btn btn-primary" id="connectBtn">Connect Device</button>
+    <p class="status-line">
+      <span class="status-dot status-idle" id="bleDot"></span>
+      <span id="bleStatusText">Not connected</span>
+    </p>
+    <p class="inline-warning" id="bleUnsupportedMsg" hidden>This browser doesn't support Bluetooth. Please use Chrome or Edge on Android or desktop.</p>
+  </section>
+
+  <section class="section" id="song-section">
+    <h2>Choose a Sound</h2>
+    <p class="section-note">Bring your own aarti or bhajan. It stays on this device and is never uploaded anywhere.</p>
+    <label class="btn btn-secondary file-btn">
+      Add your song
+      <input type="file" accept="audio/*" multiple id="songInput" hidden>
+    </label>
+    <ul class="song-list" id="songList"></ul>
+    <p class="empty-note" id="songEmptyNote">No songs added yet.</p>
+  </section>
+
+  <section class="section ritual-section" id="ritual-section">
+    <h2>The Ritual</h2>
+    <div class="bell-stage">
+      <div class="ripple" id="ripple"></div>
+      <div class="bell" id="bell">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M50 18 C50 18, 34 24, 34 46 C34 58, 28 64, 24 70 C40 76, 60 76, 76 70 C72 64, 66 58, 66 46 C66 24, 50 18, 50 18 Z"
+                stroke="var(--maroon)" stroke-width="2.4" fill="rgba(217,141,61,0.12)" stroke-linejoin="round"/>
+          <circle cx="50" cy="16" r="3.2" fill="var(--gold)"/>
+          <path d="M42 76 C42 84, 58 84, 58 76" stroke="var(--maroon)" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+          <circle cx="50" cy="88" r="2.6" fill="var(--saffron-deep)"/>
+        </svg>
+      </div>
+    </div>
+    <div class="waveform" id="waveform">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <p class="ritual-status" id="ritualStatus">Waiting for Ganpati...</p>
+    <p class="now-playing" id="nowPlayingLine" hidden></p>
+    <p class="inline-warning" id="playbackBlockedMsg" hidden>Playback was blocked by the browser. Interact with the page once and try again.</p>
+  </section>
+
+  <section class="dev-section">
+    <details id="devDetails">
+      <summary>Developer details</summary>
+      <dl class="dev-grid">
+        <dt>Bluetooth status</dt><dd id="devBleStatus">Not connected</dd>
+        <dt>Last BLE message</dt><dd id="devLastMsg">—</dd>
+        <dt>Selected song</dt><dd id="devSelectedSong">None</dd>
+        <dt>Playback status</dt><dd id="devPlayback">Idle</dd>
+      </dl>
+    </details>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Constants ----------
+  var BLE_SERVICE_UUID = '12345678-1234-5678-1234-56789abcdef0';
+  var BLE_CHAR_UUID = '12345678-1234-5678-1234-56789abcdef1';
+
+  // ---------- Elements ----------
+  var connectBtn = document.getElementById('connectBtn');
+  var bleDot = document.getElementById('bleDot');
+  var bleStatusText = document.getElementById('bleStatusText');
+  var bleUnsupportedMsg = document.getElementById('bleUnsupportedMsg');
+
+  var songInput = document.getElementById('songInput');
+  var songListEl = document.getElementById('songList');
+  var songEmptyNote = document.getElementById('songEmptyNote');
+
+  var rippleEl = document.getElementById('ripple');
+  var bellEl = document.getElementById('bell');
+  var waveformEl = document.getElementById('waveform');
+  var ritualStatusEl = document.getElementById('ritualStatus');
+  var nowPlayingLineEl = document.getElementById('nowPlayingLine');
+  var playbackBlockedMsgEl = document.getElementById('playbackBlockedMsg');
+
+  var devBleStatusEl = document.getElementById('devBleStatus');
+  var devLastMsgEl = document.getElementById('devLastMsg');
+  var devSelectedSongEl = document.getElementById('devSelectedSong');
+  var devPlaybackEl = document.getElementById('devPlayback');
+
+  // ---------- State ----------
+  var songs = [];              // { id, name, url }
+  var selectedId = null;
+  var currentPlayingId = null; // id of song currently loaded/playing in <audio>
+  var bleDevice = null;
+  var bleCharacteristic = null;
+
+  var audio = new Audio();
+  audio.preload = 'auto';
+  audio.dataset.mode = ''; // 'ring' | 'preview'
+
+  // ---------- Helpers ----------
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function generateId() {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+      return window.crypto.randomUUID();
+    }
+    return 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+  }
+
+  // ---------- BLE status ----------
+  var BLE_STATUS_LABEL = {
+    idle: 'Not connected',
+    connecting: 'Connecting...',
+    connected: 'Connected \u2713',
+    disconnected: 'Disconnected'
+  };
+
+  function setBleStatus(state) {
+    var label = BLE_STATUS_LABEL[state] || state;
+    bleStatusText.textContent = label;
+    bleDot.className = 'status-dot status-' + state;
+    devBleStatusEl.textContent = label;
+    connectBtn.disabled = (state === 'connecting');
+    connectBtn.textContent = (state === 'connected') ? 'Reconnect Device' : 'Connect Device';
+  }
+
+  function showBleUnsupported() {
+    bleUnsupportedMsg.hidden = false;
+    connectBtn.disabled = true;
+    setBleStatus('disconnected');
+  }
+
+  function onBleDisconnected() {
+    bleCharacteristic = null;
+    setBleStatus('disconnected');
+  }
+
+  function onBleValueChanged(event) {
+    var value = event.target.value;
+    var decoder = new TextDecoder('utf-8');
+    var message = decoder.decode(value).trim();
+    devLastMsgEl.textContent = message.length ? message : '(empty message)';
+    if (message.toLowerCase() === 'ring') {
+      triggerRitual();
+    }
+  }
+
+  async function connectDevice() {
+    if (!navigator.bluetooth) {
+      showBleUnsupported();
+      return;
+    }
+    bleUnsupportedMsg.hidden = true;
+    setBleStatus('connecting');
+    try {
+      bleDevice = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: [BLE_SERVICE_UUID]
+      });
+      bleDevice.addEventListener('gattserverdisconnected', onBleDisconnected);
+
+      var server = await bleDevice.gatt.connect();
+      var service = await server.getPrimaryService(BLE_SERVICE_UUID);
+      bleCharacteristic = await service.getCharacteristic(BLE_CHAR_UUID);
+      await bleCharacteristic.startNotifications();
+      bleCharacteristic.addEventListener('characteristicvaluechanged', onBleValueChanged);
+
+      setBleStatus('connected');
+    } catch (err) {
+      console.error('BLE connection failed:', err);
+      setBleStatus('disconnected');
+    }
+  }
+
+  connectBtn.addEventListener('click', connectDevice);
+
+  // ---------- Audio priming (mobile autoplay unlock, no visible button) ----------
+  function primeAudioForSong(url) {
+    if (!audio.paused) {
+      // Don't interrupt anything currently playing; the element was
+      // already unlocked by an earlier interaction.
+      return;
+    }
+    try {
+      var prevMuted = audio.muted;
+      audio.muted = true;
+      audio.src = url;
+      var playPromise = audio.play();
+      if (playPromise && typeof playPromise.then === 'function') {
+        playPromise.then(function () {
+          audio.pause();
+          audio.currentTime = 0;
+          audio.muted = prevMuted;
+        }).catch(function () {
+          audio.muted = prevMuted;
+        });
+      } else {
+        audio.pause();
+        audio.muted = prevMuted;
+      }
+    } catch (e) {
+      console.warn('Audio priming failed:', e);
+    }
+  }
+
+  // ---------- Ritual / playback ----------
+  function stopRitualAnimation() {
+    bellEl.classList.remove('is-active');
+    rippleEl.classList.remove('is-active');
+    waveformEl.classList.remove('is-active');
+  }
+
+  function onRingPlaybackStarted(song) {
+    bellEl.classList.add('is-active');
+    rippleEl.classList.add('is-active');
+    waveformEl.classList.add('is-active');
+    ritualStatusEl.textContent = 'Sound is playing';
+    nowPlayingLineEl.hidden = false;
+    nowPlayingLineEl.textContent = song.name;
+    devPlaybackEl.textContent = 'Playing: ' + song.name;
+    playbackBlockedMsgEl.hidden = true;
+  }
+
+  function triggerRitual() {
+    var song = null;
+    for (var i = 0; i < songs.length; i++) {
+      if (songs[i].id === selectedId) { song = songs[i]; break; }
+    }
+
+    if (!song) {
+      ritualStatusEl.textContent = 'Add a song first';
+      nowPlayingLineEl.hidden = true;
+      playbackBlockedMsgEl.hidden = true;
+      devPlaybackEl.textContent = 'No song selected';
+      return;
+    }
+
+    var alreadyPlayingThisViaRing =
+      audio.dataset.mode === 'ring' &&
+      currentPlayingId === song.id &&
+      !audio.paused &&
+      !audio.ended;
+
+    if (alreadyPlayingThisViaRing) {
+      return; // do not restart an already-playing song
+    }
+
+    playbackBlockedMsgEl.hidden = true;
+    audio.muted = false;
+    audio.src = song.url;
+    audio.currentTime = 0;
+    audio.dataset.mode = 'ring';
+    currentPlayingId = song.id;
+
+    var playPromise = audio.play();
+    if (playPromise && typeof playPromise.then === 'function') {
+      playPromise.then(function () {
+        onRingPlaybackStarted(song);
+      }).catch(function (err) {
+        console.error('Playback blocked:', err);
+        playbackBlockedMsgEl.hidden = false;
+        ritualStatusEl.textContent = 'Waiting for Ganpati...';
+      });
+    } else {
+      onRingPlaybackStarted(song);
+    }
+  }
+
+  audio.addEventListener('ended', function () {
+    updatePreviewButtonsUI();
+    if (audio.dataset.mode === 'ring') {
+      stopRitualAnimation();
+      ritualStatusEl.textContent = 'Waiting for Ganpati...';
+      nowPlayingLineEl.hidden = true;
+      devPlaybackEl.textContent = 'Idle';
+      currentPlayingId = null;
+      audio.dataset.mode = '';
+    }
+  });
+
+  audio.addEventListener('pause', function () {
+    updatePreviewButtonsUI();
+  });
+
+  // ---------- Song list rendering ----------
+  function renderSongList() {
+    songListEl.innerHTML = '';
+    songEmptyNote.hidden = songs.length > 0;
+
+    songs.forEach(function (song) {
+      var li = document.createElement('li');
+      li.className = 'song-row' + (song.id === selectedId ? ' selected' : '');
+      li.innerHTML =
+        '<button type="button" class="song-select" data-id="' + song.id + '">' +
+          '<span class="radio-dot" aria-hidden="true"></span>' +
+          '<span class="song-name">' + escapeHtml(song.name) + '</span>' +
+        '</button>' +
+        '<div class="song-actions">' +
+          '<button type="button" class="mini-btn preview-btn" data-id="' + song.id + '">Preview</button>' +
+          '<button type="button" class="mini-btn remove-btn" data-id="' + song.id + '">Remove</button>' +
+        '</div>';
+      songListEl.appendChild(li);
+    });
+
+    updatePreviewButtonsUI();
+  }
+
+  function updatePreviewButtonsUI() {
+    var buttons = songListEl.querySelectorAll('.preview-btn');
+    buttons.forEach(function (btn) {
+      var id = btn.dataset.id;
+      var isPreviewingThis =
+        audio.dataset.mode === 'preview' &&
+        currentPlayingId === id &&
+        !audio.paused;
+      btn.textContent = isPreviewingThis ? 'Stop' : 'Preview';
+    });
+  }
+
+  function selectSong(id) {
+    selectedId = id;
+    var song = null;
+    for (var i = 0; i < songs.length; i++) {
+      if (songs[i].id === id) { song = songs[i]; break; }
+    }
+    renderSongList();
+    if (song) {
+      devSelectedSongEl.textContent = song.name;
+      primeAudioForSong(song.url);
+    }
+  }
+
+  function togglePreview(id) {
+    var song = null;
+    for (var i = 0; i < songs.length; i++) {
+      if (songs[i].id === id) { song = songs[i]; break; }
+    }
+    if (!song) return;
+
+    var isThisPreviewing =
+      audio.dataset.mode === 'preview' &&
+      currentPlayingId === id &&
+      !audio.paused;
+
+    if (isThisPreviewing) {
+      audio.pause();
+      updatePreviewButtonsUI();
+      return;
+    }
+
+    audio.muted = false;
+    audio.src = song.url;
+    audio.currentTime = 0;
+    audio.dataset.mode = 'preview';
+    currentPlayingId = id;
+
+    var playPromise = audio.play();
+    if (playPromise && typeof playPromise.catch === 'function') {
+      playPromise.catch(function (err) {
+        console.warn('Preview blocked:', err);
+      });
+    }
+    updatePreviewButtonsUI();
+  }
+
+  function removeSong(id) {
+    var idx = -1;
+    for (var i = 0; i < songs.length; i++) {
+      if (songs[i].id === id) { idx = i; break; }
+    }
+    if (idx === -1) return;
+
+    var song = songs[idx];
+
+    if (currentPlayingId === id) {
+      audio.pause();
+      try { audio.removeAttribute('src'); audio.load(); } catch (e) {}
+      currentPlayingId = null;
+      audio.dataset.mode = '';
+      stopRitualAnimation();
+      ritualStatusEl.textContent = 'Waiting for Ganpati...';
+      nowPlayingLineEl.hidden = true;
+      devPlaybackEl.textContent = 'Idle';
+    }
+
+    URL.revokeObjectURL(song.url);
+    songs.splice(idx, 1);
+
+    if (selectedId === id) {
+      selectedId = songs.length ? songs[0].id : null;
+      devSelectedSongEl.textContent = selectedId ? songs[0].name : 'None';
+      if (selectedId) primeAudioForSong(songs[0].url);
+    }
+
+    renderSongList();
+  }
+
+  songListEl.addEventListener('click', function (e) {
+    var selectBtn = e.target.closest('.song-select');
+    var previewBtn = e.target.closest('.preview-btn');
+    var removeBtn = e.target.closest('.remove-btn');
+
+    if (selectBtn) {
+      selectSong(selectBtn.dataset.id);
+    } else if (previewBtn) {
+      togglePreview(previewBtn.dataset.id);
+    } else if (removeBtn) {
+      removeSong(removeBtn.dataset.id);
+    }
+  });
+
+  songInput.addEventListener('change', function (e) {
+    var files = Array.prototype.slice.call(e.target.files || []);
+    if (!files.length) return;
+
+    var wasEmpty = songs.length === 0;
+
+    files.forEach(function (file) {
+      var url = URL.createObjectURL(file);
+      songs.push({ id: generateId(), name: file.name, url: url });
+    });
+
+    renderSongList();
+
+    if (wasEmpty && songs.length) {
+      selectSong(songs[0].id);
+    }
+
+    songInput.value = '';
+  });
+
+  // ---------- Init ----------
+  if (!navigator.bluetooth) {
+    showBleUnsupported();
+  }
+  renderSongList();
+
+})();
+</script>
+</body>
+</html>
