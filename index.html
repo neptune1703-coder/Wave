@@ -491,7 +491,7 @@
 
   <section class="section" id="connect-section">
     <h2>Connect your device</h2>
-    <p class="section-note">Link the sensor near Bappa's feet over Bluetooth, so a wave of the hand can begin the aarti.</p>
+    <p class="section-note">Link the sensor near Bappa's feet over Bluetooth. If the connection briefly drops, the page will try to reconnect automatically.</p>
     <button type="button" class="btn btn-primary" id="connectBtn">Connect Device</button>
     <p class="status-line">
       <span class="status-dot status-idle" id="bleDot"></span>
@@ -628,9 +628,64 @@
     setBleStatus('disconnected');
   }
 
+  var reconnectTimer = null;
+  var reconnecting = false;
+  var manuallyDisconnecting = false;
+
   function onBleDisconnected() {
     bleCharacteristic = null;
     setBleStatus('disconnected');
+
+    // Automatically reconnect to the same device.
+    scheduleBleReconnect();
+  }
+
+  function scheduleBleReconnect() {
+    if (!bleDevice || manuallyDisconnecting || reconnecting) return;
+
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer);
+    }
+
+    reconnectTimer = setTimeout(function () {
+      reconnectTimer = null;
+      reconnectToKnownDevice();
+    }, 1000);
+  }
+
+  async function reconnectToKnownDevice() {
+    if (!bleDevice || manuallyDisconnecting || reconnecting) return;
+    if (bleDevice.gatt && bleDevice.gatt.connected) return;
+
+    reconnecting = true;
+    setBleStatus('connecting');
+
+    try {
+      var server = await bleDevice.gatt.connect();
+      var service = await server.getPrimaryService(BLE_SERVICE_UUID);
+      bleCharacteristic = await service.getCharacteristic(BLE_CHAR_UUID);
+
+      await bleCharacteristic.startNotifications();
+
+      // Prevent duplicate notification handlers after reconnects.
+      bleCharacteristic.removeEventListener(
+        'characteristicvaluechanged',
+        onBleValueChanged
+      );
+      bleCharacteristic.addEventListener(
+        'characteristicvaluechanged',
+        onBleValueChanged
+      );
+
+      setBleStatus('connected');
+      console.log('BLE automatically reconnected.');
+    } catch (err) {
+      console.warn('Automatic BLE reconnect failed:', err);
+      setBleStatus('disconnected');
+      scheduleBleReconnect();
+    } finally {
+      reconnecting = false;
+    }
   }
 
   function onBleValueChanged(event) {
@@ -655,13 +710,25 @@
         acceptAllDevices: true,
         optionalServices: [BLE_SERVICE_UUID]
       });
+      manuallyDisconnecting = false;
+
+      // Listen for future disconnects and automatically recover.
+      bleDevice.removeEventListener('gattserverdisconnected', onBleDisconnected);
       bleDevice.addEventListener('gattserverdisconnected', onBleDisconnected);
 
       var server = await bleDevice.gatt.connect();
       var service = await server.getPrimaryService(BLE_SERVICE_UUID);
       bleCharacteristic = await service.getCharacteristic(BLE_CHAR_UUID);
       await bleCharacteristic.startNotifications();
-      bleCharacteristic.addEventListener('characteristicvaluechanged', onBleValueChanged);
+
+      bleCharacteristic.removeEventListener(
+        'characteristicvaluechanged',
+        onBleValueChanged
+      );
+      bleCharacteristic.addEventListener(
+        'characteristicvaluechanged',
+        onBleValueChanged
+      );
 
       setBleStatus('connected');
     } catch (err) {
