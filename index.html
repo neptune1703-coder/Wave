@@ -491,7 +491,7 @@
 
   <section class="section" id="connect-section">
     <h2>Connect your device</h2>
-    <p class="section-note">Link the sensor near Bappa's feet over Bluetooth. If the connection briefly drops, the page will try to reconnect automatically.</p>
+    <p class="section-note">Link the sensor near Bappa's feet over Bluetooth, so a wave of the hand can begin the aarti.</p>
     <button type="button" class="btn btn-primary" id="connectBtn">Connect Device</button>
     <p class="status-line">
       <span class="status-dot status-idle" id="bleDot"></span>
@@ -584,6 +584,11 @@
   var bleDevice = null;
   var bleCharacteristic = null;
 
+  // ---------- BLE reconnect state ----------
+  var reconnectTimer = null;
+  var reconnecting = false;
+  var manuallyConnecting = false;
+
   var audio = new Audio();
   audio.preload = 'auto';
   audio.dataset.mode = ''; // 'ring' | 'preview'
@@ -628,20 +633,17 @@
     setBleStatus('disconnected');
   }
 
-  var reconnectTimer = null;
-  var reconnecting = false;
-  var manuallyDisconnecting = false;
-
   function onBleDisconnected() {
     bleCharacteristic = null;
     setBleStatus('disconnected');
 
-    // Automatically reconnect to the same device.
+    // The device object is still remembered by the browser, so try to
+    // reconnect without asking the user to press Connect again.
     scheduleBleReconnect();
   }
 
   function scheduleBleReconnect() {
-    if (!bleDevice || manuallyDisconnecting || reconnecting) return;
+    if (!bleDevice || reconnecting || manuallyConnecting) return;
 
     if (reconnectTimer) {
       clearTimeout(reconnectTimer);
@@ -654,8 +656,12 @@
   }
 
   async function reconnectToKnownDevice() {
-    if (!bleDevice || manuallyDisconnecting || reconnecting) return;
-    if (bleDevice.gatt && bleDevice.gatt.connected) return;
+    if (!bleDevice || reconnecting || manuallyConnecting) return;
+
+    if (bleDevice.gatt && bleDevice.gatt.connected) {
+      setBleStatus('connected');
+      return;
+    }
 
     reconnecting = true;
     setBleStatus('connecting');
@@ -663,15 +669,18 @@
     try {
       var server = await bleDevice.gatt.connect();
       var service = await server.getPrimaryService(BLE_SERVICE_UUID);
-      bleCharacteristic = await service.getCharacteristic(BLE_CHAR_UUID);
+      var characteristic = await service.getCharacteristic(BLE_CHAR_UUID);
 
-      await bleCharacteristic.startNotifications();
+      bleCharacteristic = characteristic;
 
       // Prevent duplicate notification handlers after reconnects.
       bleCharacteristic.removeEventListener(
         'characteristicvaluechanged',
         onBleValueChanged
       );
+
+      await bleCharacteristic.startNotifications();
+
       bleCharacteristic.addEventListener(
         'characteristicvaluechanged',
         onBleValueChanged
@@ -679,10 +688,14 @@
 
       setBleStatus('connected');
       console.log('BLE automatically reconnected.');
+
     } catch (err) {
       console.warn('Automatic BLE reconnect failed:', err);
       setBleStatus('disconnected');
+
+      // Try again after a short delay.
       scheduleBleReconnect();
+
     } finally {
       reconnecting = false;
     }
@@ -693,6 +706,7 @@
     var decoder = new TextDecoder('utf-8');
     var message = decoder.decode(value).trim();
     devLastMsgEl.textContent = message.length ? message : '(empty message)';
+
     if (message.toLowerCase() === 'ring') {
       triggerRitual();
     }
@@ -703,37 +717,57 @@
       showBleUnsupported();
       return;
     }
+
     bleUnsupportedMsg.hidden = true;
+
+    // Cancel any pending automatic reconnect before choosing a device.
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
+
+    manuallyConnecting = true;
     setBleStatus('connecting');
+
     try {
+      // If we already know the device, reconnect directly instead of
+      // opening the Bluetooth chooser again.
+      if (bleDevice && bleDevice.gatt) {
+        await reconnectToKnownDevice();
+        return;
+      }
+
       bleDevice = await navigator.bluetooth.requestDevice({
         acceptAllDevices: true,
         optionalServices: [BLE_SERVICE_UUID]
       });
-      manuallyDisconnecting = false;
 
-      // Listen for future disconnects and automatically recover.
-      bleDevice.removeEventListener('gattserverdisconnected', onBleDisconnected);
-      bleDevice.addEventListener('gattserverdisconnected', onBleDisconnected);
+      bleDevice.addEventListener(
+        'gattserverdisconnected',
+        onBleDisconnected
+      );
 
       var server = await bleDevice.gatt.connect();
       var service = await server.getPrimaryService(BLE_SERVICE_UUID);
       bleCharacteristic = await service.getCharacteristic(BLE_CHAR_UUID);
+
       await bleCharacteristic.startNotifications();
 
-      bleCharacteristic.removeEventListener(
-        'characteristicvaluechanged',
-        onBleValueChanged
-      );
       bleCharacteristic.addEventListener(
         'characteristicvaluechanged',
         onBleValueChanged
       );
 
       setBleStatus('connected');
+
+      console.log('BLE connected to:', bleDevice.name);
+
     } catch (err) {
       console.error('BLE connection failed:', err);
       setBleStatus('disconnected');
+
+    } finally {
+      manuallyConnecting = false;
     }
   }
 
